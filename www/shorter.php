@@ -1,7 +1,7 @@
 <?php
 
-require "url_shorter.php";
-require "tools.php";
+require_once "url_shorter.php";
+require_once "tools.php";
 
 if (isset($_GET['url']) && !empty($_GET['url'])) {
     
@@ -15,6 +15,9 @@ if (isset($_GET['url']) && !empty($_GET['url'])) {
 }
 else if (isset($_GET['hash']) && !empty($_GET['hash'])) {
     $hash = $_GET['hash'];
+
+    $params = explode("-", $_GET['hash']);
+    $hash = $params[0];
 
     if (!is_sha1($hash)) {
         echo "Invalid link";

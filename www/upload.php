@@ -24,11 +24,12 @@ if (isset($_FILES['file'])) {
     } else {
 
         $directory = random_dir();
-        $target_file = $directory."/".$_FILES['file']['name'];
+        $target_file = $directory."/".$_FILES['file']['name'].".aes";
         if (mkdir($directory)) {
-            move_uploaded_file($_FILES['file']['tmp_name'], $target_file);
-
             require_once "url_shorter.php";
+            $password = rand_sha1(8);
+            $command = "/usr/bin/openssl enc -a -aes-256-cbc -in ".$_FILES['file']['tmp_name']." -out ".$target_file." -k ".$password;
+            system($command);
 
             $db = open_database();
 
@@ -36,7 +37,7 @@ if (isset($_FILES['file'])) {
             $req = $db->prepare("INSERT INTO files (path, filename, hash) VALUES (:path, :filename, :hash)");
             $req->execute(array('path' => $target_file, 'filename' => $_FILES['file']['name'], 'hash' => $hash));
 
-            echo make_short($host."file.php?f=".$hash);
+            echo make_short($host."file.php?f=".$hash)."-".$password;
             //echo $host."file.php?f=".$hash;
         }
         else
