@@ -117,41 +117,13 @@ def make_tarball():
 
     return tarball_name
 
-def encrypt_file(filepath):
-    from subprocess import call
-
-    key = os.urandom(12).encode('hex')
-    command = "/usr/bin/openssl enc -a -aes-256-cbc -in %s -out %s.aes -k %s" % (filepath, filepath, key)
-    call(command, shell=True);
-
-    return ("%s.aes" % filepath, key)
-
-
 if __name__ == "__main__":
     if len(sys.argv) < 2:
         usage()
 
     tarball = make_tarball()
     try:
-        path, key = encrypt_file(tarball)
-    except OSError as e:
-        print("Openssl: %s" % str(e))
-        print("No openssl found, create a raw tarball (Y/n) ?")
-        if "-f" in sys.argv:
-            print("-f option given, assume Y")
-        else:
-            c = sys.stdin.read(1)
-            if c not in ['Y', 'y']:
-                print("Abort upload...")
-                os.remove(tarball);
-                sys.exit(0)
-
-        path = tarball
-        key = ""
-
-
-    try:
-        fil = open(path, 'rb')
+        fil = open(tarball, 'rb')
         content = fil.read()
         fil.close()
     except Exception as e:
@@ -159,7 +131,7 @@ if __name__ == "__main__":
         sys.exit(1)
 
     fields = {}
-    files = {'file': {'filename':path, 'content':content}}
+    files = {'file': {'filename':tarball, 'content':content}}
 
     data, headers = encode_multipart(fields, files)
 
@@ -167,14 +139,13 @@ if __name__ == "__main__":
     f = urllib2.urlopen(req)
 
     os.remove(tarball);
-    if path != tarball:
-        os.remove(path);
 
-    if len(key) != 0:
-        print("wget " + f.read() + " -O- -q | openssl enc -d -a -aes-256-cbc -k %s | tar xvf -" % key)
-        
+    result = f.read()
+    pos = result.find("-out")
+    if pos != -1:
+        print(result[:pos - 1] + " | tar xvf -")
     else:
-        print("wget " + f.read() + " -O- -q | tar xvf -")
+        print(result + " | tar xvf -")
 
 
 

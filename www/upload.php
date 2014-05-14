@@ -23,10 +23,10 @@ if (isset($_FILES['file'])) {
         echo "An error append =/";
     } else {
 
+        require_once "url_shorter.php";
         $directory = random_dir();
-        $target_file = $directory."/".$_FILES['file']['name'].".aes";
+        $target_file = $directory."/".rand_sha1(8).".aes";
         if (mkdir($directory)) {
-            require_once "url_shorter.php";
             $password = rand_sha1(8);
             $command = "/usr/bin/openssl enc -a -aes-256-cbc -in ".$_FILES['file']['tmp_name']." -out ".$target_file." -k ".$password;
             system($command);
@@ -37,7 +37,7 @@ if (isset($_FILES['file'])) {
             $req = $db->prepare("INSERT INTO files (path, filename, hash) VALUES (:path, :filename, :hash)");
             $req->execute(array('path' => $target_file, 'filename' => $_FILES['file']['name'], 'hash' => $hash));
 
-            echo make_short($host."file.php?f=".$hash)."-".$password;
+            echo "wget ".make_short($host."file.php?f=".$hash)." -O- -q | openssl enc -d -a -aes-256-cbc -k ".$password." -out ".$_FILES['file']['name'];
             //echo $host."file.php?f=".$hash;
         }
         else
