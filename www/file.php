@@ -42,6 +42,7 @@ if (isset($_GET['f']) && !empty($_GET['f']))
         header('Content-Length: '.filesize($file));
         header('Accept-Ranges: bytes');
         @readfile($file);
+        unlink($file);
         die;
     }
 }

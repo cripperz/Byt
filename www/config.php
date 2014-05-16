@@ -9,3 +9,5 @@ define("MYSQL_PORT", 3306);
 define("MYSQL_DB_NAME", "byttl");
 define("MYSQL_USERNAME", "");
 define("MYSQL_PASSWORD", "");
+
+define("DECRYPT_TMP_DIRECTORY", "/dev/shm/byt/");

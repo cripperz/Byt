@@ -25,7 +25,10 @@ function encrypt_file($upload_dir, $source, $password)
 
 function decrypt_file($file, $password)
 {
-    $tmp_location = "/dev/shm/".rand_sha1(20);
+    if (!is_dir(DECRYPT_TMP_DIRECTORY))
+        mkdir(DECRYPT_TMP_DIRECTORY);
+
+    $tmp_location = DECRYPT_TMP_DIRECTORY.rand_sha1(20);
 
     $command = "/usr/bin/openssl enc -d -a -aes-256-cbc -in ".$file." -out ".$tmp_location." -k ".$password;
     system($command, $retval);
