@@ -7,6 +7,7 @@ import random
 import string
 import tarfile
 import os
+import json
 
 upload_url = "http://byt.tl/upload.php"
 
@@ -140,12 +141,11 @@ if __name__ == "__main__":
 
     os.remove(tarball);
 
-    result = f.read()
-    pos = result.find("-out")
-    if pos != -1:
-        print(result[:pos - 1] + " | tar xvf -")
+    result = json.loads(f.read())
+    if 'error' in result:
+        print("Error: %s" % result['error'])
     else:
-        print(result + " | tar xvf -")
+        print("wget %s -O- -q | openssl enc -d -a -aes-256-cbc -k %s | tar xvf -" % (result['link'], result['key']))
 
 
 
