@@ -1,58 +1,43 @@
 <?php
 
-$ignored = array(".", "..");
-$host="http://byt.tl/";
+require_once "upload_tools.php";
+require_once "shorter_tools.php";
 
-function random_dir()
-{
-    $upload_dir = "files/";
-
-    $name = "";
-    do {
-        $name = md5(uniqid(rand(), true));
-    } while (file_exists($upload_dir.$name));
-
-    return $upload_dir.$name;
-}
-
-//var_dump($_FILES);
 if (isset($_FILES['file'])) {
     if ($_FILES['file']['error'] > 0) {
 
         error_log("Error: ".$_FILES['file']['error']);
-        echo "An error append =/";
+        echo '{"error":"An error append =/"}';
     } else {
 
-        require_once "url_shorter.php";
-        $directory = random_dir();
-        $target_file = $directory."/".rand_sha1(8).".aes";
+        $directory = random_upload_dir();
         if (mkdir($directory)) {
-            $password = rand_sha1(8);
-            $command = "/usr/bin/openssl enc -a -aes-256-cbc -in ".$_FILES['file']['tmp_name']." -out ".$target_file." -k ".$password;
-            system($command);
+            try {
+                $password = rand_sha1(8);
+                $target_file = encrypt_file($directory, $_FILES['file']['tmp_name'], $password);
+                $hash = register_uploaded_file($target_file, $_FILES['file']['name']);
+            } catch (Exception $e) {
+                header('HTTP/1.1 500 Internal Server Error', true, 500);
+                die(json_encode(array('error' => $e->getMessage())));
+            }
 
-            $db = open_database();
-
-            $hash = rand_sha1(20);
-            $req = $db->prepare("INSERT INTO files (path, filename, hash) VALUES (:path, :filename, :hash)");
-            $req->execute(array('path' => $target_file, 'filename' => $_FILES['file']['name'], 'hash' => $hash));
-
-            echo "wget ".make_short($host."file.php?f=".$hash)." -O- -q | openssl enc -d -a -aes-256-cbc -k ".$password." -out ".$_FILES['file']['name'];
-            //echo $host."file.php?f=".$hash;
+            $link = make_short(HOST_URL."file.php?f=".$hash);
+            header('Content-type: application/json');
+            die('{"link":"'.$link.'", "key":"'.$password.'", "filename":"'.$_FILES['file']['name'].'"}');
         }
         else
         {
             error_log("Error: fail to create remote dir: ".$directory);
-            echo "An error append =/";
+
+            header('HTTP/1.1 500 Internal Server Error', true, 500);
+            die(json_encode(array('error' => 'An error append =/')));
         }
     }
 }
 else
 {
-    echo "<form method='post' action='upload.php' enctype='multipart/form-data'>";
-    echo "<input type='file' name='file' />";
-    echo "<input type='submit' name='submit' value='Send' />";
-    echo "</form>";
+    header('HTTP/1.1 400 Bad Request', true, 400);
+    die(json_encode(array('error' => 'No file supplied')));
 }
 
 ?>

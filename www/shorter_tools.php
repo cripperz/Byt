@@ -1,22 +1,18 @@
 <?php
 
+require_once "config.php";
 require_once "mysql.php";
 require_once "tools.php";
 
-
-
 function make_short($url)
 {
-    $domaine='http://byt.tl/';
-    $hash_length=8;
-
     $db = open_database();
 
-    $sha = rand_sha1($hash_length);
+    $sha = rand_sha1(SHORT_LINK_HASH_LENGTH);
     $req = $db->prepare("INSERT INTO urls (`hash`, `url`) VALUES (:hash, :url)");
     $req->execute(array('hash' => $sha, 'url' => $url));
 
-    return $domaine.$sha;
+    return HOST_URL.$sha;
 }
 
 function get_url($hash)
@@ -28,5 +24,3 @@ function get_url($hash)
     $result = $req->fetch();
     return $result['url'];
 }
-
-

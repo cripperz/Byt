@@ -1,17 +1,16 @@
 <?php
+
+require_once "config.php";
+
 function open_database() {
 
-    $host='localhost';
-    $port='3306';
-    $db_name='db_name';
-    $user='user_name';
-    $pass='password';
-
     try {
-        $db = new PDO('mysql:host='.$host.';port='.$port.';dbname='.$db_name, $user, $pass);
+        $db = new PDO('mysql:host='.MYSQL_HOST.';port='.MYSQL_PORT.';dbname='.MYSQL_DB_NAME, MYSQL_USERNAME, MYSQL_PASSWORD);
     } catch (Exception $e) {
         error_log("Error: (".$e->getCode()."): ".$e->getMessage());
-        die("An error append =/");
+
+        header('HTTP/1.1 500 Internal Server Error', true, 500);
+        die(json_encode(array('error' => 'An error append =/')));
     }
     return $db;
 }
