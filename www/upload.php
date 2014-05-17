@@ -11,11 +11,19 @@ if (isset($_FILES['file'])) {
     } else {
 
         $directory = random_upload_dir();
-        if (mkdir($directory)) {
+        if (mkdir(UPLOAD_DIRECTORY.$directory)) {
             try {
                 $password = rand_sha1(8);
                 $target_file = encrypt_file($directory, $_FILES['file']['tmp_name'], $password);
-                $hash = register_uploaded_file($target_file, $_FILES['file']['name']);
+
+                $maxDlCount = -1; // Infinite
+                if (isset($_POST['maxdl']) && !empty($_POST['maxdl']))
+                    $maxDlCount = $_POST['maxdl'];
+                $expire_date = -1; // Never
+                if (isset($_POST['expire']) && !empty($_POST['expire']))
+                    $maxDlCount = $_POST['expire'];
+
+                $hash = register_uploaded_file($target_file, $_FILES['file']['name'], $maxDlCount, $expire_date);
             } catch (Exception $e) {
                 header('HTTP/1.1 500 Internal Server Error', true, 500);
                 die(json_encode(array('error' => $e->getMessage())));
