@@ -2,11 +2,11 @@
 
 define("MYSQL_HOST", "localhost");
 define("MYSQL_PORT", 3306);
-define("MYSQL_DB_NAME", "byttl_test1");
-define("MYSQL_USERNAME", "bleed");
-define("MYSQL_PASSWORD", "aptrf25");
+define("MYSQL_DB_NAME", "byttl");
+define("MYSQL_USERNAME", "");
+define("MYSQL_PASSWORD", "");
 
-define("UPLOAD_DIRECTORY", "/home/bytlt/test1/files/");
+define("UPLOAD_DIRECTORY", "/home/bytlt/files/");
 define("LOG_FILE", "./clean_expires.log");
 
 function open_database() {
